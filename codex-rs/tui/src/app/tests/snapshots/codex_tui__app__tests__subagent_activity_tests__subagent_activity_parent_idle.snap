@@ -1,0 +1,10 @@
+---
+source: tui/src/app/tests/subagent_activity_tests.rs
+expression: "render_bottom_popup(&app.chat_widget, 80)"
+---
+  ● Agents  1 running  /subagents
+
+
+› Ask Codex to do anything
+
+  gpt-5.6-sol default · /tmp/project · Main [default]

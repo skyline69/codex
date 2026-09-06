@@ -197,6 +197,7 @@ impl App {
             .agent_navigation
             .active_agent_label(self.current_displayed_thread_id(), self.primary_thread_id);
         self.chat_widget.set_active_agent_label(label);
+        self.sync_subagent_activity();
         self.sync_side_thread_ui();
     }
 
@@ -923,6 +924,7 @@ impl App {
     }
 
     pub(super) async fn refresh_pending_thread_approvals(&mut self) {
+        self.sync_subagent_activity();
         let side_parent_thread_id = self.active_side_parent_thread_id();
         let channels: Vec<(ThreadId, Arc<Mutex<ThreadEventStore>>)> = self
             .thread_event_channels

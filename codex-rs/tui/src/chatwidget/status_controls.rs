@@ -99,6 +99,10 @@ impl ChatWidget {
         self.bottom_pane.set_active_agent_label(active_agent_label);
     }
 
+    pub(crate) fn set_subagent_activity(&mut self, activity: crate::bottom_pane::SubagentActivity) {
+        self.bottom_pane.set_subagent_activity(activity);
+    }
+
     /// Recomputes footer status-line content from config and current runtime state.
     ///
     /// This method is the status-line orchestrator: it parses configured item identifiers,

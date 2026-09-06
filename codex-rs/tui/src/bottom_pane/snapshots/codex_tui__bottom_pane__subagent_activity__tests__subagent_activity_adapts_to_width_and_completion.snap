@@ -1,0 +1,10 @@
+---
+source: tui/src/bottom_pane/subagent_activity_tests.rs
+expression: "snapshots.join(\"\\n\")"
+---
+80:   ● Agents  3 running · 1 done  /subagents
+40:   ● Agents  3 running · 1 done
+20: ● 3/4 active
+8: ● 3/4
+  ○ Agents  4 done  /subagents
+  ○ Agents  4 done · 1 idle  /subagents

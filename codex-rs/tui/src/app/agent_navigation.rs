@@ -63,6 +63,28 @@ pub(crate) enum AgentNavigationDirection {
 }
 
 impl AgentNavigationState {
+    /// Counts only session subagents selected by the owner, excluding root and side conversations.
+    /// A quiet thread is done only after terminal liveness was observed.
+    pub(crate) fn activity_summary(
+        &self,
+        is_subagent: impl Fn(ThreadId) -> bool,
+    ) -> crate::bottom_pane::SubagentActivity {
+        let mut summary = crate::bottom_pane::SubagentActivity::default();
+        for (&thread_id, entry) in &self.threads {
+            if !is_subagent(thread_id) {
+                continue;
+            }
+            if entry.is_running && !entry.is_closed {
+                summary.running += 1;
+            } else if entry.is_closed || self.stopped_threads.contains(&thread_id) {
+                summary.done += 1;
+            } else {
+                summary.idle += 1;
+            }
+        }
+        summary
+    }
+
     pub(crate) fn begin_picker_refresh(&mut self, thread_id: ThreadId) -> Option<Uuid> {
         if self.picker_refresh.is_some() {
             return None;

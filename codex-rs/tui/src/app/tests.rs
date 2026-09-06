@@ -49,6 +49,8 @@ mod startup;
 mod startup_warnings_tests;
 #[path = "tests/stream_animation_tests.rs"]
 mod stream_animation_tests;
+#[path = "tests/subagent_activity_tests.rs"]
+mod subagent_activity_tests;
 #[path = "tests/thread_usage.rs"]
 mod thread_usage;
 #[path = "tests/transcript_composer.rs"]

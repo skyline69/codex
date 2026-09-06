@@ -170,6 +170,8 @@ pub(crate) use title_setup::preview_line_for_title_items;
 mod paste_burst;
 mod pending_input_preview;
 mod pending_thread_approvals;
+mod subagent_activity;
+pub(crate) use subagent_activity::SubagentActivity;
 pub(crate) mod popup_consts;
 mod scroll_state;
 mod selection_popup_common;
@@ -277,6 +279,7 @@ pub(crate) struct BottomPane {
     pending_input_preview: PendingInputPreview,
     /// Inactive threads with pending approval requests.
     pending_thread_approvals: PendingThreadApprovals,
+    subagent_activity: subagent_activity::SubagentActivityIndicator,
     context_window_percent: Option<i64>,
     context_window_used_tokens: Option<i64>,
     keymap: RuntimeKeymap,
@@ -345,6 +348,7 @@ impl BottomPane {
             unified_exec_footer: UnifiedExecFooter::new(),
             pending_input_preview: PendingInputPreview::new(),
             pending_thread_approvals: PendingThreadApprovals::new(),
+            subagent_activity: subagent_activity::SubagentActivityIndicator::default(),
             esc_backtrack_hint: false,
             animations_enabled,
             context_window_percent: None,
@@ -1498,6 +1502,13 @@ impl BottomPane {
         }
     }
 
+    pub(crate) fn set_subagent_activity(&mut self, activity: SubagentActivity) {
+        let now = Instant::now();
+        if self.subagent_activity.update(activity, now) {
+            self.request_redraw();
+        }
+    }
+
     #[cfg(test)]
     pub(crate) fn pending_thread_approvals(&self) -> &[String] {
         self.pending_thread_approvals.threads()
@@ -2002,6 +2013,15 @@ impl BottomPane {
                 );
             }
             let has_pending_thread_approvals = !self.pending_thread_approvals.is_empty();
+            let subagent_activity = self.subagent_activity.visible_activity(Instant::now());
+            if let Some(activity) = subagent_activity {
+                // Frame requests coalesce to the earliest deadline, so re-arm the expiry
+                // after every intervening draw while the completion row remains visible.
+                if let Some(deadline) = self.subagent_activity.hide_at {
+                    self.request_redraw_in(deadline.saturating_duration_since(Instant::now()));
+                }
+                flex.push(/*flex*/ 0, RenderableItem::Borrowed(activity));
+            }
             let has_questions = self
                 .questions
                 .as_ref()
@@ -2011,6 +2031,7 @@ impl BottomPane {
                 || !self.pending_input_preview.pending_steers.is_empty()
                 || !self.pending_input_preview.rejected_steers.is_empty();
             let has_status_or_footer = self.status_widget().is_some()
+                || subagent_activity.is_some()
                 || self.hook_status_message.is_some()
                 || !self.unified_exec_footer.is_empty();
             let has_inline_previews = has_pending_thread_approvals || has_pending_input;
